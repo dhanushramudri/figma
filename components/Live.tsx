@@ -7,7 +7,7 @@ import {
   useOthers,
 } from "@liveblocks/react";
 import CursorChat from "./cursor/CursorChat";
-import { CursorMode, CursorState, Reaction } from "@/types/type";
+import { CursorMode, CursorState, Reaction, ReactionEvent } from "@/types/type";
 import ReactionSelector from "./reaction/ReactionButton";
 import FlyingReaction from "./reaction/FlyingReaction";
 import useInterval from "@/hooks/useInterval";
@@ -23,6 +23,12 @@ const Live = () => {
   const [reaction, setReaction] = useState<Reaction[]>([]);
 
   const broadCast = useBroadcastEvent();
+
+  useInterval(() => {
+    setReaction((reaction) =>
+      reaction.filter((r) => r.timestamp > Date.now() - 4000)
+    );
+  }, 1000);
 
   useInterval(() => {
     if (
