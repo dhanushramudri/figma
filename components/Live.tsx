@@ -70,35 +70,29 @@ const Live = () => {
   const handlePointerMove = useCallback(
     (event: React.PointerEvent) => {
       event.preventDefault();
-      if (
-        !cursor === null ||
-        cursorState.mode !== CursorMode.ReactionSelector
-      ) {
-        const x = event.clientX - event.currentTarget.getBoundingClientRect().x;
-        const y = event.clientY - event.currentTarget.getBoundingClientRect().y; // Fix here
+      if (cursorState.mode !== CursorMode.ReactionSelector) {
+        const boundingRect = event.currentTarget.getBoundingClientRect();
+        const x = event.clientX - boundingRect.left;
+        const y = event.clientY - boundingRect.top;
 
         updateMyPresence({ cursor: { x, y } });
       }
     },
-    [cursorState.mode, setCursorState]
+    [cursorState.mode, updateMyPresence]
   );
 
   const handlePointerLeave = useCallback(() => {
     setCursorState({ mode: CursorMode.Hidden });
     updateMyPresence({ cursor: null, message: null });
-  }, []);
+  }, [updateMyPresence]);
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent) => {
-      const x = event.clientX - event.currentTarget.getBoundingClientRect().x;
-      const y = event.clientY - event.currentTarget.getBoundingClientRect().y;
+      const boundingRect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - boundingRect.left;
+      const y = event.clientY - boundingRect.top;
 
-      updateMyPresence({
-        cursor: {
-          x,
-          y,
-        },
-      });
+      updateMyPresence({ cursor: { x, y } });
 
       setCursorState((state: CursorState) =>
         cursorState.mode === CursorMode.Reaction
@@ -106,19 +100,16 @@ const Live = () => {
           : state
       );
     },
-    [cursorState.mode, setCursorState]
+    [cursorState.mode, updateMyPresence]
   );
 
-  const handlePointerUp = useCallback(
-    (event: React.PointerEvent) => {
-      setCursorState((state: CursorState) =>
-        cursorState.mode === CursorMode.Reaction
-          ? { ...state, isPressed: true }
-          : state
-      );
-    },
-    [cursorState.mode, setCursorState]
-  );
+  const handlePointerUp = useCallback(() => {
+    setCursorState((state: CursorState) =>
+      cursorState.mode === CursorMode.Reaction
+        ? { ...state, isPressed: false }
+        : state
+    );
+  }, [cursorState.mode]);
 
   useEffect(() => {
     const onKeyUp = (e: KeyboardEvent) => {
@@ -165,9 +156,9 @@ const Live = () => {
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      className="h-[100vh] w-full flex justify-center items-center text-center"
+      className="h-[100vh] w-full flex justify-center items-center text-center relative"
     >
-      <h1 className="text-5xl text-white">Figma Clone</h1>
+      <canvas />
       {reaction.map((r) => (
         <FlyingReaction
           key={r.timestamp.toString()}
